@@ -7,6 +7,7 @@
 import time
 import pandas as pd
 import numpy as np
+import click
 
 # In[75]:
 
@@ -28,28 +29,30 @@ def get_filters():
         (str) month - name of the month to filter by, or "all" to apply no month filter
         (str) day - name of the day of week to filter by, or "all" to apply no day filter
     """
-    print('Hello! Let\'s explore some US bikeshare data!')
+ 
+    click.clear()
+    print('\nHello! Let\'s explore some US bikeshare data!')
     # get user input for city (chicago, new york city, washington). HINT: Use a while loop to handle invalid inputs
     city_index = '0'
     while not city_index in ['1','2','3']:
-        print('What city?')
+        print('\nEnter city?')
         print('  1 - Chicago')
         print('  2 - New York City')
         print('  3 - Washington DC')
         city_index = input('Selection: ')
     
     city = list(CITY_DATA.keys())[int(city_index)-1]
-
+    click.clear()
     print("You selected: ",city.capitalize())
     
     # get user input for month (all, january, february, ... , june)
     valid_month = False
     months = ['all','january', 'february', 'march', 'april', 'may', 'june','july','august','september','october','november','december']
     while(not valid_month):
-        print ("Enter month:")
+        print ("\nEnter month:")
         i = 0
         for m in months:
-            print("  ",i," - ",m.capitalize())
+            print("  {:2d} - {}".format(i,m.capitalize()))
             i = i + 1
         try:
             month_input = int(input("Selection: "))
@@ -60,29 +63,39 @@ def get_filters():
                 else:
                     month = month_input
         except:
+            click.clear()
             print("Invalid Month...") 
-    print("You selected: ",months[month_input-1].capitalize())
+
+    click.clear()
+    print("You selected: ",months[month_input].capitalize())
 
     # get user input for day of week (all, monday, tuesday, ... sunday)
 
     valid_dow = False
     days = ['all','sunday','monday','tuesday','wednesday','thursday','friday','saturday']
     while(not valid_dow):
+        print ("\nEnter day of week:")
         i = 0
         for d in days:
-            print("  ",i+1," - ",d.capitalize())
+            print("  ",i," - ",d.capitalize())
             i = i + 1
         try:
             dow_input = int(input("Selection: "))
-            if (month_input >= 0 and month_input <= 7):
+            if (dow_input >= 0 and dow_input <= 7):
                 valid_dow = True
         except:
+            click.clear()
             print("Invalid Day of Week...") 
-    print("You selected: ",days[dow_input].capitalize())
+    
     day = days[dow_input]
-
-    print(city,month,day)
+    click.clear()
+    print("\nProcessing data for: ")
+    print("  City  :",city.capitalize())
+    print("  Month :",months[month_input].capitalize()) 
+    print("  Day   :",days[dow_input].capitalize()) 
     print('-'*40)
+    input("Press any key to continue...")
+    click.clear()
     return city, month, day
 
 
@@ -107,10 +120,9 @@ def load_data(city, month, day):
     df['day of week'] = df['Start Time'].dt.weekday_name
     df['hour'] = df['Start Time'].dt.hour
     if (month != 'all'):
-        df = df[(df['month']        == month)           ]
+        df = df[(df['month'] == month)]
     if (day != 'all'):
         df = df[(df['day of week']  == day.capitalize())]
-
     return df
 
 
@@ -124,23 +136,25 @@ def time_stats(df):
     start_time = time.time()
 
     # display the most common month
-    
-    months = ['january', 'february', 'march', 'april', 'may', 'june','july','august','september','october','november','december']
+    months = ['all','january', 'february', 'march', 'april', 'may', 'june','july','august','september','october','november','december']
+
     most_common_month = df['month'].value_counts().idxmax()
-    print("Most common month is         ",months[most_common_month-1].capitalize())
+    print("Most common month is         ",months[most_common_month].capitalize())
 
     # display the most common day of week
-    
+
     most_common_dow = df['day of week'].value_counts().idxmax()
     print("Most common day of week is   ",most_common_dow.capitalize())
 
     # display the most common start hour
 
     most_common_hour = df['hour'].value_counts().idxmax()
-    print("Most common start hour is is ",most_common_hour)
+    print("Most common start hour is    ",most_common_hour)
 
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-'*40)
+    input("Press any key to continue...")
+    click.clear()
 
 
 # In[88]:
@@ -168,6 +182,8 @@ def station_stats(df):
 
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-'*40)
+    input("Press any key to continue...")
+    click.clear()
 
 
 # In[93]:
@@ -190,7 +206,8 @@ def trip_duration_stats(df):
 
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-'*40)
-
+    input("Press any key to continue...")
+    click.clear()
 
 # In[155]:
 
@@ -198,36 +215,43 @@ def trip_duration_stats(df):
 def user_stats(df):
     """Displays statistics on bikeshare users."""
 
-    print('\nCalculating User Stats...\n')
+    print('\nCalculating User Stats...')
     start_time = time.time()
 
+
     # Display counts of user types.   Group by user type
+    print("\nCounts of user type\n")
     gb = df.groupby("User Type").agg(['count'])
     print(gb['Start Time'])
+
     print("")
     
     # Display counts of gender.  Group by gender
     try:
+        print("\nCounts of gender\n")
         gb = df.groupby("Gender").agg(['count'])
         print(gb['Start Time'])
     except:
-        print("Counts by gender not availalbe for this city...")
+        print("Cannot display counts by gender.  Data not available for this city.")
     print("")
     
     # Display earliest, most recent, and most common year of birth.   Oldest, newest, group by birth date
+
     try:
         gb = df.groupby("Birth Year")
         earliest_birth_year = df["Birth Year"][df["Birth Year"].idxmin()]
-        print("Earliest birth year    ",earliest_birth_year)
+        print("Earliest birth year    {:4d}".format(earliest_birth_year))
         recent_birth_year = df["Birth Year"][df["Birth Year"].idxmax()]
-        print("Most recent birth year ",recent_birth_year)
+        print("Most recent birth year {:4d}".format(recent_birth_year))
         most_common_birth_year = df['Birth Year'].value_counts().idxmax()
-        print("Most common birth year ",most_common_birth_year)
+        print("Most common birth year {:4d}".format(most_common_birth_year))
     except:
-        print("Earliest, most recent, and most common year of birth not available for this city... ")
+        print("Birth Date data not available for this city.")
+
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-'*40)
-
+    input("Press any key to continue...")
+    click.clear()
 
 # In[156]:
 
@@ -236,13 +260,13 @@ def main():
     while True:
         city, month, day = get_filters()
         df = load_data(city, month, day)
-        #df = load_data('chicago',2,'monday')
-        #print(df.head)
-        #print(df['month'].head)
-        time_stats(df)
-        station_stats(df)
-        trip_duration_stats(df)
-        user_stats(df)
+        if (df.shape[0] == 0):
+            print("No data found for city, month, and day")
+        else:
+            time_stats(df)
+            station_stats(df)
+            trip_duration_stats(df)
+            user_stats(df)
 
         restart = input('\nWould you like to restart? Enter yes or no.\n')
         if restart.lower() != 'yes':
@@ -250,49 +274,3 @@ def main():
 
 if __name__ == "__main__":
 	main()
-
-
-# In[146]:
-
-
-
-    #df = pd.read_csv('chicago.csv')
-    #df['Start Time']= pd.to_datetime(df['Start Time'])
-    #df['month'] = pd.Series(df['Start Time']).dt.month
-    #df['day of week'] = pd.Series(df['Start Time']).dt.weekday_name
-    #print(df.head)
-    #df = df[(df['day_of_week']  == day.capitalize())]
-    #df = df[(df['month']        == 1)]
-    #df = df[(df['day of week']  == 'Monday' )]
-    #print(df.head)
-    #gb = df.groupby("Birth Year")
-    #print(gb[gb["Birth Year"] == gb["Birth Year"].min()])
-    #earliest_birth_year = 
-    #print("Earliest birth year ",earliest_birth_year)
-    #recent_birth_year = gb[["Birth Year"]][gb["Birth Year"] == gb["Birth Year"].max()]
-    #print("Most recent birth year ",recent_birth_year)
-    #most_common_birth_year = df['Birth Year'].value_counts().idxmax()
-    #print("Most common birth year           ",most_common_birth_year)
-    #print(df[["Birth Year"]][df["Birth Year"] == df["Birth Year"].max()]) 
-    #df['Start Time']= pd.to_datetime(df['Start Time'])
-    #df['month'] = pd.Series(df['Start Time']).dt.month
-    #df['day_of_week'] = pd.Series(df['Start Time'].dt.weekday_name
-    #df = df[(df['month'] == month) & (df['day_of_week']  == day.capitalize())]
-    #df['Start Time']= pd.to_datetime(df['Start Time'])
-    #df['Start Time'] = pd.to_datetime(df["Start Time"])
-    #df['Start Time'] = pd.to_datetime(df{''.timeStamp)
-    #print(df['Start Time'])
-    #print(pd.Series(tds).dt.days)
-    # WHy is this column a series?
-    #df['month'] = pd.Series(df['Start Time']).dt.month
-    #print(df.columns.values)
-    #print(df.dtypes)
-    #print(df[df.columns[2]])
-    #df['Start Date'] = pd.to_datetime(df['Start Date'], errors='coerce')
-
-
-# In[ ]:
-
-
-
-
